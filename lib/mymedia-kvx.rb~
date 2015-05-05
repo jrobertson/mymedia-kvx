@@ -2,9 +2,7 @@
 
 # file: mymedia-kvx.rb
 
-
 require 'mymedia'
-
 
 
 class MyMediaKvx < MyMedia::Base
@@ -103,12 +101,7 @@ class MyMediaKvx < MyMedia::Base
     kvx.summary[:source] = File.basename(txt_destination)
 
     kvx.summary[:xslt] = @xsl unless kvx.item[:xslt]
-    File.write destination, kvx.to_xml
-    
-    # copy the media file to the destination
-    destination = kvx.body[:file][/^https?:\/\/[^\/]+(.*)/,1]
-    file = destination[/[^\/]+$/]
-    FileUtils.cp File.join(@media_src, file), File.join(@home, destination)
+    File.write destination, kvx.to_xml    
 
     [kvx, raw_msg]
   end
