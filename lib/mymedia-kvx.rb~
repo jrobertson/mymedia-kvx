@@ -17,7 +17,7 @@ class MyMediaKvx < MyMedia::Base
     
     @media_src = "%s/media/%s" % [@home, public_type]
     @prefix = 'k'
-    @target_ext = '.xml'
+    @target_ext = '.html'
 
     @media_type = media_type
     @ext = ext
@@ -33,6 +33,9 @@ class MyMediaKvx < MyMedia::Base
     raise "file not found : " + src_path unless File.exists? src_path
 
     file_publish(src_path, raw_msg) do |destination, raw_destination|
+      
+      raw_dest_xml = raw_destination.sub(/html$/,'xml')
+      dest_xml = destination.sub(/html$/,'xml')            
 
       if not raw_msg or raw_msg.empty? then        
         raw_msg = File.basename(src_path) + " updated: " + Time.now.to_s
@@ -40,8 +43,8 @@ class MyMediaKvx < MyMedia::Base
 
       if File.extname(src_path) == '.txt' then
 
-        kvx, raw_msg = copy_edit(src_path, destination)
-        copy_edit(src_path, raw_destination)
+        kvx, raw_msg = copy_edit(src_path, dest_xml)
+        copy_edit(src_path, raw_dest_xml)
 
       else
 
@@ -50,9 +53,14 @@ class MyMediaKvx < MyMedia::Base
 
         kvx.summary[:original_source] = File.basename(src_path)
         
-        File.write destination, kvx.to_s
+        File.write dest_xml, kvx.to_s
 
       end
+      
+      # transform the XML to an HTML file     
+      
+      File.write raw_destination, xsltproc("#{@home}/r/xsl/#{@public_type}.xsl", raw_dest_xml)
+      File.write destination, xsltproc("#{@home}/#{@www}/xsl/#{@public_type}.xsl", dest_xml)      
 
       if not File.basename(src_path)[/#{@prefix}\d{6}T\d{4}\.txt/] then
         
@@ -105,5 +113,11 @@ class MyMediaKvx < MyMedia::Base
 
     [kvx, raw_msg]
   end
+  
+  def xsltproc(xslpath, xmlpath)
+    
+    Nokogiri::XSLT(File.open(xslpath))\
+              .transform(Nokogiri::XML(File.open(xmlpath))).to_xhtml(indent: 0)
+  end  
   
 end
