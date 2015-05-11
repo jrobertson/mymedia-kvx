@@ -9,8 +9,8 @@ class MyMediaKvx < MyMedia::Base
 
   attr_reader :kvx
   
-  def initialize(opt={}, public_type: 'kvx', media_type: public_type, 
-                                                      config: nil, ext: '.txt')
+  def initialize(public_type: 'kvx', media_type: public_type, 
+                                         config: nil, ext: '.txt', xsl: nil)
     
     @public_type = public_type
     super(media_type: media_type, public_type: public_type, config: config)
@@ -21,6 +21,7 @@ class MyMediaKvx < MyMedia::Base
 
     @media_type = media_type
     @ext = ext
+    @xsl = xsl
     
   end
 
@@ -54,6 +55,7 @@ class MyMediaKvx < MyMedia::Base
         kvx.summary[:original_source] = File.basename(src_path)
         
         File.write dest_xml, kvx.to_s
+        File.write raw_dest_xml, kvx.to_s
 
       end
       
@@ -106,9 +108,14 @@ class MyMediaKvx < MyMedia::Base
     raw_msg = ("%s %s" % [title, tags]).strip
         
     kvx.summary[:original_source] = File.basename(src_path)
-    kvx.summary[:source] = File.basename(txt_destination)
+    
+    source = txt_destination[/\/#{@public_type}.*/]
+    relative_path = '/r' + source
 
-    kvx.summary[:xslt] = @xsl unless kvx.item[:xslt]
+    kvx.summary[:source_url] = relative_path
+    kvx.summary[:source_file] = File.basename(txt_destination)
+    kvx.summary[:published] = Time.now.strftime("%d-%m-%Y %H:%M")
+    kvx.summary[:xslt] = @xsl unless kvx.summary[:xslt]
     File.write destination, kvx.to_xml    
 
     [kvx, raw_msg]
