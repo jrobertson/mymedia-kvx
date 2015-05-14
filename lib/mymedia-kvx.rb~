@@ -60,7 +60,7 @@ class MyMediaKvx < MyMedia::Base
       end
 
       # add the XSLT instruction to the destination XML file
-      File.write dest_xml, doc.xml(pretty: true)
+      File.write dest_xml, kvx.to_doc.xml(pretty: true)
       
       # transform the XML to an HTML file     
       
@@ -120,12 +120,12 @@ class MyMediaKvx < MyMedia::Base
     kvx.summary[:published] = Time.now.strftime("%d-%m-%Y %H:%M")
     kvx.summary[:xslt] = @xsl unless kvx.summary[:xslt]
     
-    doc = Rexle.new File.read(dest_xml)     
+    doc = kvx.to_doc
     doc.instructions.push \
         %w(xml-stylesheet title='XSL_formatting' type='text/xsl') \
                   + ["href='#{@website}/r/xsl/#{@public_type}.xsl'"]
     
-    File.write destination, kvx.to_xml    
+    File.write destination, doc.xml(pretty: true)
 
     [kvx, raw_msg]
   end
