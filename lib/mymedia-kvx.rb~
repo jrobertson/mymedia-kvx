@@ -45,7 +45,7 @@ class MyMediaKvx < MyMedia::Base
       if File.extname(src_path) == '.txt' then
 
         kvx, raw_msg = copy_edit(src_path, dest_xml)
-        copy_edit(src_path, raw_dest_xml)
+        copy_edit(src_path, raw_dest_xml, xsldir: 'r/xsl')
 
       else
 
@@ -59,8 +59,6 @@ class MyMediaKvx < MyMedia::Base
 
       end
 
-      # add the XSLT instruction to the destination XML file
-      File.write dest_xml, kvx.to_doc.xml(pretty: true)
       
       # transform the XML to an HTML file     
       
@@ -85,12 +83,12 @@ class MyMediaKvx < MyMedia::Base
         
       end
       
-      [raw_msg,target_url]
+      [raw_msg, target_url]
     end    
 
   end
   
-  def copy_edit(src_path, destination, raw='')
+  def copy_edit(src_path, destination, raw='', xsldir: 'xsl')
 
     txt_destination = destination.sub(/xml$/,'txt')
     FileUtils.cp src_path, txt_destination        
@@ -123,7 +121,7 @@ class MyMediaKvx < MyMedia::Base
     doc = kvx.to_doc
     doc.instructions.push \
         %w(xml-stylesheet title='XSL_formatting' type='text/xsl') \
-                  + ["href='#{@website}/r/xsl/#{@public_type}.xsl'"]
+                  + ["href='#{@website}/#{xsldir}/#{@public_type}.xsl'"]
     
     File.write destination, doc.xml(pretty: true)
 

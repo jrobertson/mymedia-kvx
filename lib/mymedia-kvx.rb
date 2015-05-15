@@ -71,7 +71,7 @@ class MyMediaKvx < MyMedia::Base
         FileUtils.cp destination, @home + "/#{@public_type}/" + xml_filename
         
         if File.extname(src_path) == '.txt' then
-          FileUtils.cp src_path, @home + "/#{public_type}/" + File.basename(src_path)
+          FileUtils.cp src_path, @home + "/#{@public_type}/" + File.basename(src_path)
         end
 
         #publish the static links feed
