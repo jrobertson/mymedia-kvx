@@ -138,10 +138,13 @@ class MyMediaKvx < MyMedia::Base
     desc = body.element 'desc'
     
     if desc then
-      desc.add RDiscount.new(Martile.new(desc.text).to_s).to_html
-      desc.text = ''      
+      
+      html= RDiscount.new(Martile.new(desc.element('//text()')).to_s).to_html      
+      desc.delete      
+      body.add Rexle.new("<desc>%s</desc>" % html).root
+      
     end
-    
+
     File.write destination, doc.xml(pretty: true)
 
     [kvx, raw_msg]
