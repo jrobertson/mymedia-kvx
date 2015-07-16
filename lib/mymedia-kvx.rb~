@@ -67,8 +67,8 @@ class MyMediaKvx < MyMedia::Base
 
       if not File.basename(src_path)[/#{@prefix}\d{6}T\d{4}\.txt/] then
         
-        xml_filename = File.basename(src_path).sub(/txt$/,'xml')
-        FileUtils.cp destination, @home + "/#{@public_type}/" + xml_filename
+        html_filename = File.basename(src_path).sub(/\.txt$/, @target_ext)
+        FileUtils.cp destination, @home + "/#{@public_type}/" + html_filename
         
         if File.extname(src_path) == '.txt' then
           FileUtils.cp src_path, @home + "/#{@public_type}/" + File.basename(src_path)
@@ -77,9 +77,9 @@ class MyMediaKvx < MyMedia::Base
         #publish the static links feed
         kvx_filepath = @home + "/#{@public_type}/static.xml"
 
-        target_url = "%s/%s/%s" % [@website, @public_type, xml_filename]
+        target_url = "%s/%s/%s" % [@website, @public_type, html_filename]
 
-        publish_dynarex(kvx_filepath, {title: xml_filename, url: target_url })
+        publish_dynarex(kvx_filepath, {title: html_filename, url: target_url })
         
       end
       
@@ -122,6 +122,11 @@ class MyMediaKvx < MyMedia::Base
     doc.instructions.push \
         %w(xml-stylesheet title='XSL_formatting' type='text/xsl') \
                   + ["href='#{@website}/#{xsldir}/#{@public_type}.xsl'"]
+    
+    summary = doc.root.element('summary')
+    a = summary.xpath('title|tags|original_source|' + \
+                      'source_url|source_file|published|xslt')
+    a.each {|x| x.attributes[:class] = 'meta'}
     
     File.write destination, doc.xml(pretty: true)
 

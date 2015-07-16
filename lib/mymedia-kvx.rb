@@ -3,6 +3,7 @@
 # file: mymedia-kvx.rb
 
 require 'mymedia'
+require 'martile'
 
 
 class MyMediaKvx < MyMedia::Base
@@ -13,7 +14,9 @@ class MyMediaKvx < MyMedia::Base
                                          config: nil, ext: '.txt', xsl: nil)
     
     @public_type = public_type
+    
     super(media_type: media_type, public_type: public_type, config: config)
+    
     
     @media_src = "%s/media/%s" % [@home, public_type]
     @prefix = 'k'
@@ -41,7 +44,7 @@ class MyMediaKvx < MyMedia::Base
       if not raw_msg or raw_msg.empty? then        
         raw_msg = File.basename(src_path) + " updated: " + Time.now.to_s
       end
-
+      
       if File.extname(src_path) == '.txt' then
 
         kvx, raw_msg = copy_edit(src_path, dest_xml)
@@ -62,8 +65,10 @@ class MyMediaKvx < MyMedia::Base
       
       # transform the XML to an HTML file     
       
-      File.write raw_destination, xsltproc("#{@home}/r/xsl/#{@public_type}.xsl", raw_dest_xml)
-      File.write destination, xsltproc("#{@home}/#{@www}/xsl/#{@public_type}.xsl", dest_xml)      
+      File.write raw_destination, \
+                  xsltproc("#{@home}/r/xsl/#{@public_type}.xsl", raw_dest_xml)
+      File.write destination, \
+                xsltproc("#{@home}/#{@www}/xsl/#{@public_type}.xsl", dest_xml)
 
       if not File.basename(src_path)[/#{@prefix}\d{6}T\d{4}\.txt/] then
         
@@ -71,7 +76,8 @@ class MyMediaKvx < MyMedia::Base
         FileUtils.cp destination, @home + "/#{@public_type}/" + html_filename
         
         if File.extname(src_path) == '.txt' then
-          FileUtils.cp src_path, @home + "/#{@public_type}/" + File.basename(src_path)
+          FileUtils.cp src_path, @home + "/#{@public_type}/" \
+                                              + File.basename(src_path)
         end
 
         #publish the static links feed
@@ -127,6 +133,14 @@ class MyMediaKvx < MyMedia::Base
     a = summary.xpath('title|tags|original_source|' + \
                       'source_url|source_file|published|xslt')
     a.each {|x| x.attributes[:class] = 'meta'}
+    
+    body = doc.root.element 'body'
+    desc = body.element 'desc'
+    
+    if desc then
+      desc.add RDiscount.new(Martile.new(desc.text).to_s).to_html
+      desc.text = ''      
+    end
     
     File.write destination, doc.xml(pretty: true)
 
