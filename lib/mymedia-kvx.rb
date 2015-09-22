@@ -27,6 +27,10 @@ class MyMediaKvx < MyMedia::Base
     @xsl = xsl
     
   end
+  
+  def media_path()
+    @media_src
+  end
 
 
   private
