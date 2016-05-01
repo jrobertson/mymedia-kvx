@@ -31,9 +31,6 @@ class MyMediaKvx < MyMedia::Base
   def media_path()
     @media_src
   end
-
-
-  private
   
   def copy_publish(filename, raw_msg='')
 
@@ -98,6 +95,8 @@ class MyMediaKvx < MyMedia::Base
 
   end
   
+  private  
+  
   def copy_edit(src_path, destination, raw='', xsldir: 'xsl')
 
     txt_destination = destination.sub(/xml$/,'txt')
@@ -156,8 +155,9 @@ class MyMediaKvx < MyMedia::Base
   
   def xsltproc(xslpath, xmlpath)
     
-    Nokogiri::XSLT(File.open(xslpath))\
-              .transform(Nokogiri::XML(File.open(xmlpath))).to_xhtml(indent: 0)
+    # jr290416 Nokogiri::XSLT(File.open(xslpath))\
+    # jr290416           .transform(Nokogiri::XML(File.open(xmlpath))).to_xhtml(indent: 0)
+    Rexslt.new(xslpath, xmlpath).to_s
   end  
   
 end
