@@ -4,6 +4,7 @@
 
 require 'mymedia'
 require 'martile'
+require 'nokogiri'
 
 
 class MyMediaKvx < MyMedia::Base
@@ -65,9 +66,11 @@ class MyMediaKvx < MyMedia::Base
 
       
       # transform the XML to an HTML file     
+
       
-      File.write raw_destination, \
-                  xsltproc("#{@home}/r/xsl/#{@public_type}.xsl", raw_dest_xml)
+      #jr010816 File.write raw_destination, \
+      #            xsltproc("#{@home}/r/xsl/#{@public_type}.xsl", raw_dest_xml)
+
       File.write destination, \
                 xsltproc("#{@home}/#{@www}/xsl/#{@public_type}.xsl", dest_xml)
 
@@ -155,9 +158,9 @@ class MyMediaKvx < MyMedia::Base
   
   def xsltproc(xslpath, xmlpath)
     
-    # jr290416 Nokogiri::XSLT(File.open(xslpath))\
-    # jr290416           .transform(Nokogiri::XML(File.open(xmlpath))).to_xhtml(indent: 0)
-    Rexslt.new(xslpath, xmlpath).to_s
+    Nokogiri::XSLT(File.open(xslpath))\
+               .transform(Nokogiri::XML(File.open(xmlpath))).to_xhtml(indent: 0)
+    #jr010817 Rexslt.new(xslpath, xmlpath).to_s
   end  
   
 end
