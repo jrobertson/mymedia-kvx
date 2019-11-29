@@ -33,7 +33,7 @@ class MyMediaKvx < MyMedia::Base
     @media_src
   end
   
-  def copy_publish(filename, raw_msg='')
+  def copy_publish(filename, raw_msg='', &blk)
 
     src_path = File.join(@media_src, filename)
     raise "file not found : " + src_path unless File.exists? src_path
@@ -71,8 +71,23 @@ class MyMediaKvx < MyMedia::Base
       #jr010816 File.write raw_destination, \
       #            xsltproc("#{@home}/r/xsl/#{@public_type}.xsl", raw_dest_xml)
 
+      
+      if block_given? then
+        
+        a = blk.call({home: @home, www: @www, destination: destination, 
+                      dest_xml: dest_xml})
+        a.each do |xsl, outfile|
+          
+          puts 'xsl: ' + xsl.inspect
+          puts 'outfile: ' + outfile.inspect
+          
+          File.write outfile, xsltproc(xsl, dest_xml)
+        end
+      end
+      
       File.write destination, \
                 xsltproc("#{@home}/#{@www}/xsl/#{@public_type}.xsl", dest_xml)
+      
 
       if not File.basename(src_path)[/#{@prefix}\d{6}T\d{4}\.txt/] then
         
@@ -107,7 +122,8 @@ class MyMediaKvx < MyMedia::Base
 
     buffer = File.read(src_path)
     buffer2 = buffer.gsub(/\[[xX]\]/,'✓').gsub(/\[\s*\]/,'.')
-
+    puts 'buffer2: ' + buffer2.inspect
+    
     @kvx = Kvx.new(buffer2.strip)
 
     title = kvx.summary[:title]
@@ -125,7 +141,7 @@ class MyMediaKvx < MyMedia::Base
     source = txt_destination[/\/#{@public_type}.*/]
     relative_path = '/r' + source
 
-    kvx.summary[:source_url] = relative_path
+    kvx.summary[:source_url] = File.dirname(relative_path)
     kvx.summary[:source_file] = File.basename(txt_destination)
     kvx.summary[:published] = Time.now.strftime("%d-%m-%Y %H:%M")
     kvx.summary[:xslt] = @xsl unless kvx.summary[:xslt]
